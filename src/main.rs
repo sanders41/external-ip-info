@@ -1,6 +1,13 @@
+mod cache;
+mod cli;
+
 use anyhow::Result;
+use clap::Parser;
 use colored::*;
 use serde::Deserialize;
+
+use crate::cache::Cache;
+use crate::cli::Cli;
 
 #[derive(Debug, Deserialize)]
 struct IpInfo {
@@ -28,23 +35,85 @@ fn get_location_info(ip: &str) -> Result<LocationInfo> {
 }
 
 fn main() {
+    let args = Cli::parse();
+
+    if args.clear_cache && Cache::clear_cache().is_err() {
+        eprintln!("{}", "Error clearing cache".red());
+        std::process::exit(1);
+    }
+
     let ip_info = if let Ok(ip) = get_ip_info() {
         ip
     } else {
         eprintln!("{}", "Error retrieving ip information".red());
         std::process::exit(1);
     };
-    let location_info = if let Ok(location) = get_location_info(&ip_info.ip_addr) {
-        location
+
+    let cache = if let Ok(mut c) = Cache::get() {
+        if let Some(ip_addr) = &c.ip_addr {
+            if ip_addr == &ip_info.ip_addr {
+                c
+            } else if let Ok(location) = get_location_info(&ip_info.ip_addr) {
+                c.ip_addr = Some(ip_info.ip_addr);
+                c.country = Some(location.country);
+                c.region = Some(location.region);
+                c.city = Some(location.city);
+
+                if c.save().is_err() {
+                    eprintln!("{}", "Error saving cache".red());
+                    std::process::exit(1);
+                }
+
+                c
+            } else {
+                eprintln!("{}", "Error retrieving location information".red());
+                std::process::exit(1);
+            }
+        } else if let Ok(location) = get_location_info(&ip_info.ip_addr) {
+            c.ip_addr = Some(ip_info.ip_addr);
+            c.country = Some(location.country);
+            c.region = Some(location.region);
+            c.city = Some(location.city);
+
+            if c.save().is_err() {
+                eprintln!("{}", "Error saving cache".red());
+                std::process::exit(1);
+            }
+
+            c
+        } else {
+            eprintln!("{}", "Error retrieving location information".red());
+            std::process::exit(1);
+        }
     } else {
-        eprintln!("{}", "Error retrieving location information".red());
+        eprintln!("{}", "Error retrieving cache".red());
         std::process::exit(1);
     };
 
-    let ip_addr = format!("{}", ip_info.ip_addr.blue());
-    let country = format!("{}", location_info.country.blue());
-    let region = format!("{}", location_info.region.blue());
-    let city = format!("{}", location_info.city.blue());
+    let ip_addr = if let Some(ip_addr) = cache.ip_addr {
+        format!("{}", ip_addr.blue())
+    } else {
+        eprintln!("{}", "Error retrieving ip information".red());
+        std::process::exit(1);
+    };
+    let country = if let Some(country) = cache.country {
+        format!("{}", country.blue())
+    } else {
+        eprintln!("{}", "Error retrieving ip information".red());
+        std::process::exit(1);
+    };
+    let region = if let Some(region) = cache.region {
+        format!("{}", region.blue())
+    } else {
+        eprintln!("{}", "Error retrieving ip information".red());
+        std::process::exit(1);
+    };
+    let city = if let Some(city) = cache.city {
+        format!("{}", city.blue())
+    } else {
+        eprintln!("{}", "Error retrieving ip information".red());
+        std::process::exit(1);
+    };
 
     println!();
     println!("ip address: {}", ip_addr);
