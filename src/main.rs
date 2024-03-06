@@ -46,7 +46,7 @@ fn main() {
     let region = format!("{}", location_info.region.blue());
     let city = format!("{}", location_info.city.blue());
 
-    println!("");
+    println!();
     println!("ip address: {}", ip_addr);
     println!("country: {}", country);
     println!("region: {}", region);
