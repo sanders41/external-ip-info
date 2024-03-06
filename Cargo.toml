@@ -1,0 +1,20 @@
+[package]
+name = "external-ip-info"
+version = "0.1.0"
+edition = "2021"
+authors = ["Paul Sanders <psanders1@gmail.com"]
+description = "Prints the current external ip address and location"
+documentation = "https://github.com/sanders41/external-ip-info"
+homepage = "https://github.com/sanders41/external-ip-info"
+repository = "https://github.com/sanders41/external-ip-info"
+readme = "README.md"
+keywords = ["cli", "ip", "geolocation"]
+categories = ["command-line-utilities"]
+license = "MIT"
+
+[dependencies]
+anyhow = "1.0.80"
+clap = { version = "4.5.1", features = ["derive"] }
+colored = "2.1.0"
+reqwest = { version = "0.11.24", features = ["json", "blocking"] }
+serde = { version = "1.0.197", features = ["derive"] }
