@@ -116,8 +116,8 @@ fn main() {
     };
 
     println!();
-    println!("ip address: {}", ip_addr);
-    println!("country: {}", country);
-    println!("region: {}", region);
-    println!("city: {}", city);
+    println!("ip address: {ip_addr}");
+    println!("country: {country}");
+    println!("region: {region}");
+    println!("city: {city}");
 }
